@@ -43,13 +43,13 @@ const Dashboard = () => {
     pendingIssues: 0,
   });
   const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
+  const [hasData, setHasData] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchStats();
       fetchUserProfile();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchUserProfile = async () => {
@@ -73,21 +73,26 @@ const Dashboard = () => {
     ]);
 
     const totalRevenue = paymentsRes.data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+    const propertyCount = propertiesRes.count || 0;
+    
+    // Check if there's any data
+    setHasData(propertyCount > 0 || totalRevenue > 0);
 
     setStats({
-      totalProperties: propertiesRes.count || 0,
+      totalProperties: propertyCount,
       totalTenants: tenantsRes.count || 0,
       monthlyRevenue: totalRevenue,
       pendingIssues: maintenanceRes.count || 0,
     });
   };
 
+  // Empty chart data when no properties exist
   const revenueData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
       {
         label: 'Revenue',
-        data: [185000, 195000, 210000, 225000, 235000, 245600],
+        data: hasData ? [185000, 195000, 210000, 225000, 235000, 245600] : [0, 0, 0, 0, 0, 0],
         borderColor: 'hsl(221, 76%, 58%)',
         backgroundColor: 'rgba(67, 97, 238, 0.1)',
         tension: 0.4,
@@ -100,7 +105,7 @@ const Dashboard = () => {
     labels: ['Residential', 'Commercial', 'Mixed Use'],
     datasets: [
       {
-        data: [5, 2, 1],
+        data: hasData ? [5, 2, 1] : [0, 0, 0],
         backgroundColor: [
           'hsl(221, 76%, 58%)',
           'hsl(192, 92%, 60%)',
@@ -116,7 +121,7 @@ const Dashboard = () => {
     datasets: [
       {
         label: 'Occupancy Rate (%)',
-        data: [85, 88, 90, 89, 91, 92],
+        data: hasData ? [85, 88, 90, 89, 91, 92] : [0, 0, 0, 0, 0, 0],
         backgroundColor: 'hsl(192, 92%, 60%)',
         borderRadius: 8,
       },
@@ -133,6 +138,24 @@ const Dashboard = () => {
           font: { size: 12, weight: '600' as const },
         },
       },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== undefined) {
+              if (context.dataset.label === 'Revenue') {
+                label += 'R' + context.parsed.y.toLocaleString();
+              } else {
+                label += context.parsed.y + (context.dataset.label === 'Occupancy Rate (%)' ? '%' : '');
+              }
+            }
+            return label;
+          }
+        }
+      }
     },
     scales: {
       x: {
@@ -142,6 +165,7 @@ const Dashboard = () => {
       y: {
         ticks: { color: 'rgba(255, 255, 255, 0.7)' },
         grid: { color: 'rgba(255, 255, 255, 0.1)' },
+        beginAtZero: true,
       },
     },
   };
@@ -179,10 +203,10 @@ const Dashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
-            { icon: DollarSign, label: 'Monthly Revenue', value: `R${stats.monthlyRevenue.toLocaleString()}`, trend: '+12.5%', positive: true, delay: 1 },
-            { icon: Building2, label: 'Total Properties', value: stats.totalProperties, trend: '+8.2%', positive: true, delay: 2 },
-            { icon: Users, label: 'Active Tenants', value: stats.totalTenants, trend: '+15.3%', positive: true, delay: 3 },
-            { icon: AlertTriangle, label: 'Pending Issues', value: stats.pendingIssues, trend: '-3.1%', positive: false, delay: 4 },
+            { icon: DollarSign, label: 'Monthly Revenue', value: `R${stats.monthlyRevenue.toLocaleString()}`, trend: stats.monthlyRevenue > 0 ? '+0%' : '0%', positive: true, delay: 1 },
+            { icon: Building2, label: 'Total Properties', value: stats.totalProperties, trend: stats.totalProperties > 0 ? '+0%' : '0%', positive: true, delay: 2 },
+            { icon: Users, label: 'Active Tenants', value: stats.totalTenants, trend: stats.totalTenants > 0 ? '+0%' : '0%', positive: true, delay: 3 },
+            { icon: AlertTriangle, label: 'Pending Issues', value: stats.pendingIssues, trend: stats.pendingIssues > 0 ? '0%' : '0%', positive: false, delay: 4 },
           ].map((stat, idx) => (
             <Card key={idx} className={`glass-panel p-6 border-t-4 ${
               idx === 0 ? 'border-t-[hsl(var(--success))]' :
@@ -207,61 +231,82 @@ const Dashboard = () => {
               <div className="text-4xl font-black text-white mb-2">{stat.value}</div>
               <div className="text-white/90 font-medium mb-3">{stat.label}</div>
               <div className="text-sm text-white/70">
-                {idx === 0 ? '+R24,560 from last month' :
-                 idx === 1 ? '+2 properties this quarter' :
-                 idx === 2 ? '92% occupancy rate' :
-                 '2 awaiting attention'}
+                {idx === 0 ? 'No payments recorded yet' :
+                 idx === 1 ? 'Add your first property to get started' :
+                 idx === 2 ? 'Add tenants to your properties' :
+                 'No pending maintenance requests'}
               </div>
             </Card>
           ))}
         </div>
 
-        {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Card className="glass-panel p-6">
-            <h3 className="text-lg font-bold text-white mb-6">Revenue Overview</h3>
-            <div className="h-[280px]">
-              <Line data={revenueData} options={chartOptions} />
-            </div>
-          </Card>
-
-          <Card className="glass-panel p-6">
-            <h3 className="text-lg font-bold text-white mb-6">Property Types Distribution</h3>
-            <div className="h-[280px] flex items-center justify-center">
-              <Doughnut data={propertyTypeData} options={{ ...chartOptions, scales: undefined }} />
-            </div>
-          </Card>
-        </div>
-
-        {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Card className="glass-panel p-6">
-            <h3 className="text-lg font-bold text-white mb-6">Occupancy Rate Trend</h3>
-            <div className="h-[280px]">
-              <Bar data={occupancyData} options={chartOptions} />
-            </div>
-          </Card>
-
-          <Card className="glass-panel p-6">
-            <h3 className="text-lg font-bold text-white mb-6">Performance Metrics</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: 'Collection Rate', value: '98.2%', trend: '+2.1%', positive: true },
-                { label: 'Tenant Retention', value: '94.5%', trend: '+1.8%', positive: true },
-                { label: 'Average Rent', value: 'R7,850', trend: '+5.2%', positive: true },
-                { label: 'Maintenance Cost', value: 'R12,400', trend: '-8.3%', positive: false },
-              ].map((metric, idx) => (
-                <div key={idx} className="p-4 bg-white/5 rounded-xl border border-white/10 text-center">
-                  <div className="text-2xl font-bold text-white mb-2">{metric.value}</div>
-                  <div className="text-sm text-white/80 mb-2">{metric.label}</div>
-                  <div className={`text-xs font-bold ${metric.positive ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--danger))]'}`}>
-                    {metric.positive ? '↑' : '↓'} {metric.trend}
-                  </div>
+        {/* Charts Row 1 - Only show if there's data */}
+        {hasData ? (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <Card className="glass-panel p-6">
+                <h3 className="text-lg font-bold text-white mb-6">Revenue Overview</h3>
+                <div className="h-[280px]">
+                  <Line data={revenueData} options={chartOptions} />
                 </div>
-              ))}
+              </Card>
+
+              <Card className="glass-panel p-6">
+                <h3 className="text-lg font-bold text-white mb-6">Property Types Distribution</h3>
+                <div className="h-[280px] flex items-center justify-center">
+                  <Doughnut data={propertyTypeData} options={{ ...chartOptions, scales: undefined }} />
+                </div>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <Card className="glass-panel p-6">
+                <h3 className="text-lg font-bold text-white mb-6">Occupancy Rate Trend</h3>
+                <div className="h-[280px]">
+                  <Bar data={occupancyData} options={chartOptions} />
+                </div>
+              </Card>
+
+              <Card className="glass-panel p-6">
+                <h3 className="text-lg font-bold text-white mb-6">Performance Metrics</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Collection Rate', value: '0%', trend: '0%', positive: true },
+                    { label: 'Tenant Retention', value: '0%', trend: '0%', positive: true },
+                    { label: 'Average Rent', value: 'R0', trend: '0%', positive: true },
+                    { label: 'Maintenance Cost', value: 'R0', trend: '0%', positive: false },
+                  ].map((metric, idx) => (
+                    <div key={idx} className="p-4 bg-white/5 rounded-xl border border-white/10 text-center">
+                      <div className="text-2xl font-bold text-white mb-2">{metric.value}</div>
+                      <div className="text-sm text-white/80 mb-2">{metric.label}</div>
+                      <div className={`text-xs font-bold ${metric.positive ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--danger))]'}`}>
+                        {metric.positive ? '↑' : '↓'} {metric.trend}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          </>
+        ) : (
+          <Card className="glass-panel p-12 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center">
+                <TrendingUp className="w-10 h-10 text-white/40" />
+              </div>
+              <h3 className="text-xl font-bold text-white">No Data Available</h3>
+              <p className="text-white/60 max-w-md">
+                Start adding properties and tenants to see your financial analytics and performance metrics here.
+              </p>
+              <Link to="/properties">
+                <Button className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white mt-2">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your First Property
+                </Button>
+              </Link>
             </div>
           </Card>
-        </div>
+        )}
 
         {/* Quick Actions */}
         <Card className="glass-panel p-6">
