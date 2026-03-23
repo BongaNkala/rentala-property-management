@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    base: '/',
+    base: '/rentala-property-management/', // ← Changed this line
     build: {
       outDir: 'dist',
     }
