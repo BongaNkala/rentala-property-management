@@ -11,7 +11,7 @@ import Maintenance from '@/pages/Maintenance';
 import FinancialReports from '@/pages/FinancialReports';
 import Settings from '@/pages/Settings';
 
-export const router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: '/',
     element: <Navigate to="/dashboard" replace />,
@@ -64,4 +64,8 @@ export const router = createBrowserRouter([
     path: '*',
     element: <NotFound />,
   },
-]);
+], {
+  basename: import.meta.env.BASE_URL
+});
+
+export { router };
