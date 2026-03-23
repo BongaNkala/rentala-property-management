@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Wrench, Plus, Search, AlertTriangle, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -294,82 +295,84 @@ const MaintenancePage = () => {
           </div>
         </Card>
 
-        {/* Add/Edit Modal */}
+        {/* Add/Edit Modal - Scrollable */}
         <Dialog open={showModal} onOpenChange={handleCloseModal}>
-          <DialogContent className="glass-panel border-white/20 text-white">
-            <DialogHeader>
+          <DialogContent className="bg-black/90 backdrop-blur-xl border-white/20 text-white max-w-2xl p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2 border-b border-white/10">
               <DialogTitle className="text-2xl font-bold">{editingMaintenance ? 'Edit Maintenance Request' : 'Create Maintenance Request'}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Property *</Label>
-                <Select value={formData.property_id} onValueChange={(value) => setFormData({...formData, property_id: value})}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                    <SelectValue placeholder="Select a property" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {properties.map(prop => (
-                      <SelectItem key={prop.id} value={prop.id}>{prop.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Issue *</Label>
-                <Input value={formData.issue} onChange={(e) => setFormData({...formData, issue: e.target.value})} required className="bg-white/5 border-white/20 text-white" placeholder="e.g., Broken faucet" />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="bg-white/5 border-white/20 text-white" rows={3} placeholder="Detailed description..." />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+            <ScrollArea className="max-h-[calc(100vh-200px)]">
+              <form onSubmit={handleSubmit} className="space-y-4 p-6">
                 <div className="space-y-2">
-                  <Label>Priority *</Label>
-                  <Select value={formData.priority} onValueChange={(value: 'low' | 'medium' | 'high') => setFormData({...formData, priority: value})}>
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                      <SelectValue />
+                  <Label>Property *</Label>
+                  <Select value={formData.property_id} onValueChange={(value) => setFormData({...formData, property_id: value})}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue placeholder="Select a property" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
+                      {properties.map(prop => (
+                        <SelectItem key={prop.id} value={prop.id}>{prop.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Status *</Label>
-                  <Select value={formData.status} onValueChange={(value: 'pending' | 'in_progress' | 'completed' | 'cancelled') => setFormData({...formData, status: value})}>
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Due Date</Label>
-                  <Input type="date" value={formData.due_date} onChange={(e) => setFormData({...formData, due_date: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                  <Label>Issue *</Label>
+                  <Input value={formData.issue} onChange={(e) => setFormData({...formData, issue: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" placeholder="e.g., Broken faucet, Leaking pipe, etc." />
                 </div>
                 <div className="space-y-2">
-                  <Label>Cost (R)</Label>
-                  <Input type="number" step="0.01" value={formData.cost} onChange={(e) => setFormData({...formData, cost: Number(e.target.value)})} className="bg-white/5 border-white/20 text-white" />
+                  <Label>Description</Label>
+                  <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" rows={3} placeholder="Detailed description of the issue..." />
                 </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleCloseModal} className="bg-white/5 text-white border-white/20">
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white">
-                  {editingMaintenance ? 'Update' : 'Create'} Request
-                </Button>
-              </DialogFooter>
-            </form>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Priority *</Label>
+                    <Select value={formData.priority} onValueChange={(value: 'low' | 'medium' | 'high') => setFormData({...formData, priority: value})}>
+                      <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status *</Label>
+                    <Select value={formData.status} onValueChange={(value: 'pending' | 'in_progress' | 'completed' | 'cancelled') => setFormData({...formData, status: value})}>
+                      <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Due Date</Label>
+                    <Input type="date" value={formData.due_date} onChange={(e) => setFormData({...formData, due_date: e.target.value})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Cost (R)</Label>
+                    <Input type="number" step="0.01" value={formData.cost} onChange={(e) => setFormData({...formData, cost: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" placeholder="0.00" />
+                  </div>
+                </div>
+                <DialogFooter className="sticky bottom-0 bg-black/90 pt-4 pb-2 mt-4 border-t border-white/10">
+                  <Button type="button" variant="outline" onClick={handleCloseModal} className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white hover:opacity-90">
+                    {editingMaintenance ? 'Update' : 'Create'} Request
+                  </Button>
+                </DialogFooter>
+              </form>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </div>

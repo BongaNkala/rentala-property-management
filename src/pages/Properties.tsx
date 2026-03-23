@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Building2, Plus, Search, TrendingUp, TrendingDown, DoorOpen, CheckCircle2, Percent, Edit, Trash2 } from 'lucide-react';
@@ -305,83 +306,113 @@ const Properties = () => {
           </div>
         )}
 
-        {/* Add/Edit Modal - Fixed with no hover effects */}
+        {/* Add/Edit Modal - Scrollable */}
         <Dialog open={showModal} onOpenChange={handleCloseModal}>
-          <DialogContent className="bg-black/90 backdrop-blur-xl border-white/20 text-white max-h-[90vh] overflow-y-auto [&_.glass-panel]:hover:transform-none [&_.glass-panel]:hover:shadow-none [&_.glass-panel]:hover:translate-y-0 [&_.glass-panel]:hover:before:opacity-0" style={{ transform: 'none', transition: 'none' }}>
-            <DialogHeader>
+          <DialogContent className="bg-black/90 backdrop-blur-xl border-white/20 text-white max-w-2xl p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2 border-b border-white/10">
               <DialogTitle className="text-2xl font-bold">{editingProperty ? 'Edit Property' : 'Add New Property'}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Property Name *</Label>
-                  <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+            <ScrollArea className="max-h-[calc(100vh-200px)]">
+              <form onSubmit={handleSubmit} className="space-y-4 p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Property Name *</Label>
+                    <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Property Type *</Label>
+                    <Select value={formData.property_type} onValueChange={(value: 'residential' | 'commercial' | 'mixed') => setFormData({...formData, property_type: value})}>
+                      <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="residential">Residential</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                        <SelectItem value="mixed">Mixed Use</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Property Type *</Label>
-                  <Select value={formData.property_type} onValueChange={(value: 'residential' | 'commercial' | 'mixed') => setFormData({...formData, property_type: value})}>
+                  <Label>Address *</Label>
+                  <Input value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>City *</Label>
+                    <Input value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Postal Code</Label>
+                    <Input value={formData.postal_code} onChange={(e) => setFormData({...formData, postal_code: e.target.value})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Units *</Label>
+                    <Input type="number" value={formData.units} onChange={(e) => setFormData({...formData, units: Number(e.target.value)})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Property Value (R) *</Label>
+                    <Input type="number" value={formData.value} onChange={(e) => setFormData({...formData, value: Number(e.target.value)})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Monthly Rent (R)</Label>
+                    <Input type="number" value={formData.rent} onChange={(e) => setFormData({...formData, rent: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Year Built</Label>
+                    <Input type="number" value={formData.year_built} onChange={(e) => setFormData({...formData, year_built: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Bedrooms</Label>
+                    <Input type="number" value={formData.bedrooms} onChange={(e) => setFormData({...formData, bedrooms: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bathrooms</Label>
+                    <Input type="number" step="0.5" value={formData.bathrooms} onChange={(e) => setFormData({...formData, bathrooms: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Size (sqm)</Label>
+                    <Input type="number" value={formData.size} onChange={(e) => setFormData({...formData, size: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Amenities (comma separated)</Label>
+                  <Input value={formData.amenities} onChange={(e) => setFormData({...formData, amenities: e.target.value})} placeholder="e.g., Pool, Gym, Parking" className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'maintenance' | 'vacant') => setFormData({...formData, status: value})}>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="residential">Residential</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
-                      <SelectItem value="mixed">Mixed Use</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="maintenance">Maintenance</SelectItem>
+                      <SelectItem value="vacant">Vacant</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Address *</Label>
-                <Input value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>City *</Label>
-                  <Input value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Postal Code</Label>
-                  <Input value={formData.postal_code} onChange={(e) => setFormData({...formData, postal_code: e.target.value})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Units *</Label>
-                  <Input type="number" value={formData.units} onChange={(e) => setFormData({...formData, units: Number(e.target.value)})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Property Value (R) *</Label>
-                  <Input type="number" value={formData.value} onChange={(e) => setFormData({...formData, value: Number(e.target.value)})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Bedrooms</Label>
-                  <Input type="number" value={formData.bedrooms} onChange={(e) => setFormData({...formData, bedrooms: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Bathrooms</Label>
-                  <Input type="number" step="0.5" value={formData.bathrooms} onChange={(e) => setFormData({...formData, bathrooms: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Size (sqm)</Label>
-                  <Input type="number" value={formData.size} onChange={(e) => setFormData({...formData, size: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="bg-white/10 border-white/20 text-white focus:bg-white/20" rows={3} />
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleCloseModal} className="bg-white/10 text-white border-white/20 hover:bg-white/20">
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white hover:opacity-90">
-                  {editingProperty ? 'Update' : 'Add'} Property
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter className="sticky bottom-0 bg-black/90 pt-4 pb-2 mt-4 border-t border-white/10">
+                  <Button type="button" variant="outline" onClick={handleCloseModal} className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white hover:opacity-90">
+                    {editingProperty ? 'Update' : 'Add'} Property
+                  </Button>
+                </DialogFooter>
+              </form>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </div>

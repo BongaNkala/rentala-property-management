@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Plus, Search, TrendingUp, TrendingDown, CheckCircle2, Clock, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -265,74 +266,76 @@ const Tenants = () => {
           </div>
         )}
 
-        {/* Add/Edit Modal */}
+        {/* Add/Edit Modal - Scrollable */}
         <Dialog open={showModal} onOpenChange={handleCloseModal}>
-          <DialogContent className="glass-panel border-white/20 text-white">
-            <DialogHeader>
+          <DialogContent className="bg-black/90 backdrop-blur-xl border-white/20 text-white max-w-2xl p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2 border-b border-white/10">
               <DialogTitle className="text-2xl font-bold">{editingTenant ? 'Edit Tenant' : 'Add New Tenant'}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Full Name *</Label>
-                <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="bg-white/5 border-white/20 text-white" />
-              </div>
-              <div className="space-y-2">
-                <Label>Email *</Label>
-                <Input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required className="bg-white/5 border-white/20 text-white" />
-              </div>
-              <div className="space-y-2">
-                <Label>Phone *</Label>
-                <Input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} required className="bg-white/5 border-white/20 text-white" />
-              </div>
-              <div className="space-y-2">
-                <Label>Property *</Label>
-                <Select value={formData.property_id} onValueChange={(value) => setFormData({...formData, property_id: value})}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                    <SelectValue placeholder="Select a property" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {properties.map(prop => (
-                      <SelectItem key={prop.id} value={prop.id}>{prop.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Monthly Rent (R) *</Label>
-                <Input type="number" value={formData.rent} onChange={(e) => setFormData({...formData, rent: Number(e.target.value)})} required className="bg-white/5 border-white/20 text-white" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+            <ScrollArea className="max-h-[calc(100vh-200px)]">
+              <form onSubmit={handleSubmit} className="space-y-4 p-6">
                 <div className="space-y-2">
-                  <Label>Lease Start *</Label>
-                  <Input type="date" value={formData.lease_start} onChange={(e) => setFormData({...formData, lease_start: e.target.value})} required className="bg-white/5 border-white/20 text-white" />
+                  <Label>Full Name *</Label>
+                  <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Lease End *</Label>
-                  <Input type="date" value={formData.lease_end} onChange={(e) => setFormData({...formData, lease_end: e.target.value})} required className="bg-white/5 border-white/20 text-white" />
+                  <Label>Email *</Label>
+                  <Input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Status *</Label>
-                <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'pending') => setFormData({...formData, status: value})}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleCloseModal} className="bg-white/5 text-white border-white/20">
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white">
-                  {editingTenant ? 'Update' : 'Add'} Tenant
-                </Button>
-              </DialogFooter>
-            </form>
+                <div className="space-y-2">
+                  <Label>Phone *</Label>
+                  <Input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Property *</Label>
+                  <Select value={formData.property_id} onValueChange={(value) => setFormData({...formData, property_id: value})}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue placeholder="Select a property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {properties.map(prop => (
+                        <SelectItem key={prop.id} value={prop.id}>{prop.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Monthly Rent (R) *</Label>
+                  <Input type="number" value={formData.rent} onChange={(e) => setFormData({...formData, rent: Number(e.target.value)})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Lease Start *</Label>
+                    <Input type="date" value={formData.lease_start} onChange={(e) => setFormData({...formData, lease_start: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Lease End *</Label>
+                    <Input type="date" value={formData.lease_end} onChange={(e) => setFormData({...formData, lease_end: e.target.value})} required className="bg-white/10 border-white/20 text-white focus:bg-white/20" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Status *</Label>
+                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'pending') => setFormData({...formData, status: value})}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter className="sticky bottom-0 bg-black/90 pt-4 pb-2 mt-4 border-t border-white/10">
+                  <Button type="button" variant="outline" onClick={handleCloseModal} className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white hover:opacity-90">
+                    {editingTenant ? 'Update' : 'Add'} Tenant
+                  </Button>
+                </DialogFooter>
+              </form>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </div>
