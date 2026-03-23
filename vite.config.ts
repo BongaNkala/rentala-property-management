@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins.push(...enterDevPlugin());
   }
   return {
+    base: '/rentala-property-management/',
     server: {
       host: "::",
       port: 8080,
@@ -21,7 +22,6 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    base: '/rentala-property-management/',
     build: {
       outDir: 'dist',
     }
