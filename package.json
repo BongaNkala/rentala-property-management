@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "NODE_ENV=development vite build --mode development",
+    "build": "vite build --mode development",
     "build:prod": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -82,6 +82,7 @@
     "eslint": "^9.34.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "gh-pages": "^6.3.0",
     "globals": "^16.3.0",
     "pnpm": "8.6.12",
     "postcss": "^8.5.6",
