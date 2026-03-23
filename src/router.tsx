@@ -11,6 +11,8 @@ import Maintenance from '@/pages/Maintenance';
 import FinancialReports from '@/pages/FinancialReports';
 import Settings from '@/pages/Settings';
 
+const basename = '/rentala-property-management';
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -65,7 +67,7 @@ const router = createBrowserRouter([
     element: <NotFound />,
   },
 ], {
-  basename: import.meta.env.BASE_URL
+  basename: basename
 });
 
 export { router };
