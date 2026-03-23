@@ -153,6 +153,7 @@ const Tenants = () => {
     return matchesSearch && matchesFilter;
   });
 
+  // Stats show zeros when no tenants
   const stats = {
     total: tenants.length,
     active: tenants.filter(t => t.status === 'active').length,
@@ -168,13 +169,13 @@ const Tenants = () => {
           <p className="text-white/80">Manage all tenants and their rental information</p>
         </div>
 
-        {/* Stats */}
+        {/* Stats - Show zeros when no tenants */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
-            { icon: Users, label: 'Total Tenants', value: stats.total, trend: '+5.2%', positive: true },
-            { icon: CheckCircle2, label: 'Active Tenants', value: stats.active, trend: '+2.1%', positive: true },
-            { icon: Clock, label: 'Pending Applications', value: stats.pending, trend: '-1.3%', positive: false },
-            { icon: DollarSign, label: 'Total Rent Collected', value: `R${stats.totalRent.toLocaleString()}`, trend: '+8.5%', positive: true },
+            { icon: Users, label: 'Total Tenants', value: stats.total, trend: stats.total > 0 ? '+0%' : '0%', positive: true },
+            { icon: CheckCircle2, label: 'Active Tenants', value: stats.active, trend: stats.active > 0 ? '+0%' : '0%', positive: true },
+            { icon: Clock, label: 'Pending Applications', value: stats.pending, trend: stats.pending > 0 ? '0%' : '0%', positive: false },
+            { icon: DollarSign, label: 'Total Rent Collected', value: `R${stats.totalRent.toLocaleString()}`, trend: stats.totalRent > 0 ? '+0%' : '0%', positive: true },
           ].map((stat, idx) => (
             <Card key={idx} className="glass-panel p-6">
               <div className="flex justify-between items-start mb-4">
@@ -188,6 +189,12 @@ const Tenants = () => {
               </div>
               <div className="text-3xl font-black text-white mb-2">{stat.value}</div>
               <div className="text-white/90 font-medium">{stat.label}</div>
+              <div className="text-sm text-white/70 mt-2">
+                {idx === 0 ? 'Add tenants to see them here' :
+                 idx === 1 ? 'Active tenants appear here' :
+                 idx === 2 ? 'Pending applications show here' :
+                 'Rent total updates with payments'}
+              </div>
             </Card>
           ))}
         </div>
