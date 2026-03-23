@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins.push(...enterDevPlugin());
   }
   return {
-    base: '/rentala-property-management/',
+    base: './',
     server: {
       host: "::",
       port: 8080,
