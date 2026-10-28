@@ -10,13 +10,17 @@ import Payments from '@/pages/Payments';
 import Maintenance from '@/pages/Maintenance';
 import FinancialReports from '@/pages/FinancialReports';
 import Settings from '@/pages/Settings';
+import Invoices from '@/pages/Invoices';
+import Arrears from '@/pages/Arrears';
+import Expenses from '@/pages/Expenses';
+import Screening from '@/pages/Screening';
 
 const basename = '/rentala-property-management';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/dashboard" replace />,
+    element: <Index />,
   },
   {
     path: '/login',
@@ -43,6 +47,22 @@ const router = createBrowserRouter([
     element: <Payments />,
   },
   {
+    path: '/invoices',
+    element: <Invoices />,
+  },
+  {
+    path: '/arrears',
+    element: <Arrears />,
+  },
+  {
+    path: '/expenses',
+    element: <Expenses />,
+  },
+  {
+    path: '/screening',
+    element: <Screening />,
+  },
+  {
     path: '/maintenance',
     element: <Maintenance />,
   },
@@ -52,7 +72,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/analytics',
-    element: <Dashboard />,
+    element: <Navigate to="/reports" replace />,
   },
   {
     path: '/settings',
@@ -60,7 +80,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/profile',
-    element: <Dashboard />,
+    element: <Navigate to="/settings" replace />,
   },
   {
     path: '*',

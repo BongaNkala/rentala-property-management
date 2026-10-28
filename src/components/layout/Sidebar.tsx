@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, LayoutDashboard, Building2, Users, DollarSign, Wrench, BarChart3, PieChart, Settings, User, LogOut } from 'lucide-react';
+import { Home, LayoutDashboard, Building2, Users, DollarSign, Wrench, BarChart3, Settings, LogOut, FileText, AlertCircle, Receipt, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -33,18 +33,20 @@ const Sidebar = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
     { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { label: 'Properties', icon: Building2, path: '/properties' },
     { label: 'Tenants', icon: Users, path: '/tenants' },
+    { label: 'Invoices', icon: FileText, path: '/invoices' },
     { label: 'Payments', icon: DollarSign, path: '/payments' },
+    { label: 'Arrears', icon: AlertCircle, path: '/arrears' },
+    { label: 'Expenses', icon: Receipt, path: '/expenses' },
+    { label: 'Screening', icon: ShieldCheck, path: '/screening' },
     { label: 'Maintenance', icon: Wrench, path: '/maintenance' },
   ];
 
   const analyticsNav: NavItem[] = [
     { label: 'Reports', icon: BarChart3, path: '/reports' },
-    { label: 'Analytics', icon: PieChart, path: '/analytics' },
   ];
 
   const settingsNav: NavItem[] = [
     { label: 'Settings', icon: Settings, path: '/settings' },
-    { label: 'Profile', icon: User, path: '/profile' },
   ];
 
   const isActive = (path: string) => location.pathname === path;

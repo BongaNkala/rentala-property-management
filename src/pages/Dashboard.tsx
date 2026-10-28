@@ -44,6 +44,13 @@ const Dashboard = () => {
   });
   const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
   const [hasData, setHasData] = useState(false);
+  const [chart, setChart] = useState({
+    months: [] as string[],
+    revenue: [] as number[],
+    types: { residential: 0, commercial: 0, mixed: 0 },
+    occupancyNames: [] as string[],
+    occupancy: [] as number[],
+  });
 
   useEffect(() => {
     if (user) {
@@ -66,33 +73,60 @@ const Dashboard = () => {
     if (!user) return;
 
     const [propertiesRes, tenantsRes, paymentsRes, maintenanceRes] = await Promise.all([
-      supabase.from('properties').select('*', { count: 'exact' }).eq('user_id', user.id),
-      supabase.from('tenants').select('*', { count: 'exact' }).eq('user_id', user.id).eq('status', 'active'),
-      supabase.from('payments').select('amount').eq('user_id', user.id).eq('status', 'completed'),
-      supabase.from('maintenance').select('*', { count: 'exact' }).eq('user_id', user.id).eq('status', 'pending'),
+      supabase.from('properties').select('id, name, type, units').eq('user_id', user.id),
+      supabase.from('tenants').select('property_id').eq('user_id', user.id).eq('status', 'active'),
+      supabase.from('payments').select('amount, payment_date').eq('user_id', user.id).eq('status', 'completed'),
+      supabase.from('maintenance').select('id', { count: 'exact' }).eq('user_id', user.id).eq('status', 'pending'),
     ]);
 
-    const totalRevenue = paymentsRes.data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-    const propertyCount = propertiesRes.count || 0;
-    
-    // Check if there's any data
-    setHasData(propertyCount > 0 || totalRevenue > 0);
+    const properties = propertiesRes.data || [];
+    const activeTenants = tenantsRes.data || [];
+    const payments = paymentsRes.data || [];
 
+    // Revenue for each of the last six months, from real payments
+    const now = new Date();
+    const months: string[] = [];
+    const revenue: number[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      months.push(d.toLocaleString('en-ZA', { month: 'short' }));
+      revenue.push(
+        payments
+          .filter(p => String(p.payment_date).startsWith(key))
+          .reduce((sum, p) => sum + Number(p.amount), 0)
+      );
+    }
+    const thisMonthRevenue = revenue[revenue.length - 1] || 0;
+
+    const types = { residential: 0, commercial: 0, mixed: 0 };
+    properties.forEach(p => {
+      if (p.type in types) types[p.type as keyof typeof types] += 1;
+    });
+
+    const occupancyNames = properties.map(p => p.name);
+    const occupancy = properties.map(p => {
+      const occ = activeTenants.filter(t => t.property_id === p.id).length;
+      return p.units > 0 ? Math.min(100, Math.round((occ / p.units) * 100)) : 0;
+    });
+
+    setHasData(properties.length > 0 || payments.length > 0);
+    setChart({ months, revenue, types, occupancyNames, occupancy });
     setStats({
-      totalProperties: propertyCount,
-      totalTenants: tenantsRes.count || 0,
-      monthlyRevenue: totalRevenue,
+      totalProperties: properties.length,
+      totalTenants: activeTenants.length,
+      monthlyRevenue: thisMonthRevenue,
       pendingIssues: maintenanceRes.count || 0,
     });
   };
 
   // Empty chart data when no properties exist
   const revenueData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: chart.months,
     datasets: [
       {
         label: 'Revenue',
-        data: hasData ? [185000, 195000, 210000, 225000, 235000, 245600] : [0, 0, 0, 0, 0, 0],
+        data: chart.revenue,
         borderColor: 'hsl(221, 76%, 58%)',
         backgroundColor: 'rgba(67, 97, 238, 0.1)',
         tension: 0.4,
@@ -105,7 +139,7 @@ const Dashboard = () => {
     labels: ['Residential', 'Commercial', 'Mixed Use'],
     datasets: [
       {
-        data: hasData ? [5, 2, 1] : [0, 0, 0],
+        data: [chart.types.residential, chart.types.commercial, chart.types.mixed],
         backgroundColor: [
           'hsl(221, 76%, 58%)',
           'hsl(192, 92%, 60%)',
@@ -117,11 +151,11 @@ const Dashboard = () => {
   };
 
   const occupancyData = {
-    labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    labels: chart.occupancyNames,
     datasets: [
       {
         label: 'Occupancy Rate (%)',
-        data: hasData ? [85, 88, 90, 89, 91, 92] : [0, 0, 0, 0, 0, 0],
+        data: chart.occupancy,
         backgroundColor: 'hsl(192, 92%, 60%)',
         borderRadius: 8,
       },
@@ -187,7 +221,7 @@ const Dashboard = () => {
                 <Building2 className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1 text-center md:text-left">
-                <h3 className="text-2xl font-bold text-white mb-2">Welcome to Rentala! í¾‰</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">Welcome to Rentala! ðŸŽ‰</h3>
                 <p className="text-white/80 mb-4">Start managing your properties by adding your first property. It only takes a minute!</p>
                 <Link to="/properties">
                   <Button className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-dark))] text-white">
@@ -261,7 +295,7 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <Card className="glass-panel p-6">
-                <h3 className="text-lg font-bold text-white mb-6">Occupancy Rate Trend</h3>
+                <h3 className="text-lg font-bold text-white mb-6">Occupancy by property</h3>
                 <div className="h-[280px]">
                   <Bar data={occupancyData} options={chartOptions} />
                 </div>

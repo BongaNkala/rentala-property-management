@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Settings as SettingsIcon, Bell, Layout, Table2, FileText, RefreshCw, RotateCcw, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import BusinessProfileCard from '@/components/BusinessProfileCard';
 
 const Settings = () => {
   const { toast } = useToast();
@@ -108,6 +109,8 @@ const Settings = () => {
             </Button>
           </div>
         </div>
+
+        <BusinessProfileCard />
 
         <Card className="glass-panel p-6 space-y-6">
           <div className="flex items-center gap-3">

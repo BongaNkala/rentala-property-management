@@ -1,73 +1,29 @@
-# React + TypeScript + Vite
+# Rentala
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Rental management for independent landlords and small letting agents in South Africa.
+React + TypeScript + Vite + Tailwind + shadcn/ui, with Supabase for auth and data.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Properties and tenants**: units, live occupancy, leases and rent
+- **Invoices**: create, email, text or print with your business details; marking one paid records the payment
+- **Arrears**: overdue invoices by tenant with days overdue and one-tap email or SMS reminders
+- **Expenses**: vendor list and bills, with what is due and what is cleared
+- **Payments, maintenance and reports**: as before, now fed by real data
+- **Screening**: applicant log with approve and decline
+- **Pricing page**: tiered per-lease pricing with a calculator
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Create a Supabase project and run `supabase/migrations/20261028000000_init.sql` in the SQL editor.
+2. Put your project URL and anon key in `src/integrations/supabase/client.ts`.
+3. Regenerate types: `npx supabase gen types typescript --project-id <id> > src/integrations/supabase/types.ts`
+4. `pnpm install` then `pnpm dev`.
 
-## Expanding the ESLint configuration
+Every table has row level security, so each user only sees their own rows.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Known limits
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Email and SMS open the user's own mail or messaging app. Sending automatically (scheduled reminders, delivery tracking) needs a Supabase Edge Function and a provider such as an SMS gateway.
+- Screening is a manual log. A live credit bureau check needs a bureau account and a server-side integration.
+- The pricing calculator assumes the per-lease rate of your total tier applies to leases above the free 20.
