@@ -44,6 +44,7 @@ const Dashboard = () => {
   });
   const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
   const [hasData, setHasData] = useState(false);
+  const [metrics, setMetrics] = useState({ collectionRate: 0, occupancy: 0, averageRent: 0, arrears: 0 });
   const [chart, setChart] = useState({
     months: [] as string[],
     revenue: [] as number[],
@@ -72,11 +73,12 @@ const Dashboard = () => {
   const fetchStats = async () => {
     if (!user) return;
 
-    const [propertiesRes, tenantsRes, paymentsRes, maintenanceRes] = await Promise.all([
+    const [propertiesRes, tenantsRes, paymentsRes, maintenanceRes, invoicesRes] = await Promise.all([
       supabase.from('properties').select('id, name, type, units').eq('user_id', user.id),
-      supabase.from('tenants').select('property_id').eq('user_id', user.id).eq('status', 'active'),
+      supabase.from('tenants').select('property_id, rent').eq('user_id', user.id).eq('status', 'active'),
       supabase.from('payments').select('amount, payment_date').eq('user_id', user.id).eq('status', 'completed'),
       supabase.from('maintenance').select('id', { count: 'exact' }).eq('user_id', user.id).eq('status', 'pending'),
+      supabase.from('invoices').select('amount, status, due_date').eq('user_id', user.id),
     ]);
 
     const properties = propertiesRes.data || [];
@@ -108,6 +110,21 @@ const Dashboard = () => {
     const occupancy = properties.map(p => {
       const occ = activeTenants.filter(t => t.property_id === p.id).length;
       return p.units > 0 ? Math.min(100, Math.round((occ / p.units) * 100)) : 0;
+    });
+
+    // Metrics from real invoices and tenants
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const invoices = invoicesRes.data || [];
+    const due = invoices.filter(i => i.due_date <= todayStr);
+    const dueTotal = due.reduce((sum, i) => sum + Number(i.amount), 0);
+    const paidTotal = due.filter(i => i.status === 'paid').reduce((sum, i) => sum + Number(i.amount), 0);
+    const totalUnits = properties.reduce((sum, p) => sum + (p.units || 0), 0);
+    const rents = activeTenants.map(t => Number(t.rent) || 0);
+    setMetrics({
+      collectionRate: dueTotal > 0 ? Math.round((paidTotal / dueTotal) * 100) : 0,
+      occupancy: totalUnits > 0 ? Math.min(100, Math.round((activeTenants.length / totalUnits) * 100)) : 0,
+      averageRent: rents.length ? Math.round(rents.reduce((a, b) => a + b, 0) / rents.length) : 0,
+      arrears: dueTotal - paidTotal,
     });
 
     setHasData(properties.length > 0 || payments.length > 0);
@@ -237,10 +254,10 @@ const Dashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
-            { icon: DollarSign, label: 'Monthly Revenue', value: `R${stats.monthlyRevenue.toLocaleString()}`, trend: stats.monthlyRevenue > 0 ? '+0%' : '0%', positive: true, delay: 1 },
-            { icon: Building2, label: 'Total Properties', value: stats.totalProperties, trend: stats.totalProperties > 0 ? '+0%' : '0%', positive: true, delay: 2 },
-            { icon: Users, label: 'Active Tenants', value: stats.totalTenants, trend: stats.totalTenants > 0 ? '+0%' : '0%', positive: true, delay: 3 },
-            { icon: AlertTriangle, label: 'Pending Issues', value: stats.pendingIssues, trend: stats.pendingIssues > 0 ? '0%' : '0%', positive: false, delay: 4 },
+            { icon: DollarSign, label: 'Monthly Revenue', value: `R${stats.monthlyRevenue.toLocaleString()}`, delay: 1 },
+            { icon: Building2, label: 'Total Properties', value: stats.totalProperties, delay: 2 },
+            { icon: Users, label: 'Active Tenants', value: stats.totalTenants, delay: 3 },
+            { icon: AlertTriangle, label: 'Pending Issues', value: stats.pendingIssues, delay: 4 },
           ].map((stat, idx) => (
             <Card key={idx} className={`glass-panel p-6 border-t-4 ${
               idx === 0 ? 'border-t-[hsl(var(--success))]' :
@@ -257,18 +274,14 @@ const Dashboard = () => {
                 }`}>
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
-                <div className={`flex items-center gap-1 text-sm font-bold ${stat.positive ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--danger))]'}`}>
-                  {stat.positive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  {stat.trend}
-                </div>
               </div>
               <div className="text-4xl font-black text-white mb-2">{stat.value}</div>
               <div className="text-white/90 font-medium mb-3">{stat.label}</div>
               <div className="text-sm text-white/70">
-                {idx === 0 ? 'No payments recorded yet' :
-                 idx === 1 ? 'Add your first property to get started' :
-                 idx === 2 ? 'Add tenants to your properties' :
-                 'No pending maintenance requests'}
+                {idx === 0 ? (stats.monthlyRevenue > 0 ? 'Payments received this month' : 'No payments recorded this month') :
+                 idx === 1 ? (stats.totalProperties > 0 ? 'In your portfolio' : 'Add your first property to get started') :
+                 idx === 2 ? (stats.totalTenants > 0 ? 'With an active lease' : 'Add tenants to your properties') :
+                 (stats.pendingIssues > 0 ? 'Maintenance requests waiting' : 'No pending maintenance requests')}
               </div>
             </Card>
           ))}
@@ -305,17 +318,14 @@ const Dashboard = () => {
                 <h3 className="text-lg font-bold text-white mb-6">Performance Metrics</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: 'Collection Rate', value: '0%', trend: '0%', positive: true },
-                    { label: 'Tenant Retention', value: '0%', trend: '0%', positive: true },
-                    { label: 'Average Rent', value: 'R0', trend: '0%', positive: true },
-                    { label: 'Maintenance Cost', value: 'R0', trend: '0%', positive: false },
+                    { label: 'Collection rate', value: `${metrics.collectionRate}%` },
+                    { label: 'Occupancy', value: `${metrics.occupancy}%` },
+                    { label: 'Average rent', value: `R${metrics.averageRent.toLocaleString('en-ZA')}` },
+                    { label: 'In arrears', value: `R${metrics.arrears.toLocaleString('en-ZA')}` },
                   ].map((metric, idx) => (
                     <div key={idx} className="p-4 bg-white/5 rounded-xl border border-white/10 text-center">
                       <div className="text-2xl font-bold text-white mb-2">{metric.value}</div>
-                      <div className="text-sm text-white/80 mb-2">{metric.label}</div>
-                      <div className={`text-xs font-bold ${metric.positive ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--danger))]'}`}>
-                        {metric.positive ? '↑' : '↓'} {metric.trend}
-                      </div>
+                      <div className="text-sm text-white/80">{metric.label}</div>
                     </div>
                   ))}
                 </div>

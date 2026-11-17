@@ -43,8 +43,8 @@ const MaintenancePage = () => {
     property_id: '',
     issue: '',
     description: '',
-    priority: 'medium' as const,
-    status: 'pending' as const,
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    status: 'pending' as 'pending' | 'in_progress' | 'completed' | 'cancelled',
     due_date: '',
     cost: 0,
   });

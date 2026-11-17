@@ -45,10 +45,10 @@ const Payments = () => {
     property_id: '',
     amount: 0,
     payment_date: format(new Date(), 'yyyy-MM-dd'),
-    payment_method: 'bank_transfer' as const,
+    payment_method: 'bank_transfer' as 'bank_transfer' | 'cash' | 'card' | 'eft',
     reference: '',
     notes: '',
-    status: 'completed' as const,
+    status: 'completed' as 'completed' | 'pending' | 'overdue',
   });
 
   useEffect(() => {

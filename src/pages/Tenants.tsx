@@ -45,7 +45,7 @@ const Tenants = () => {
     rent: 0,
     lease_start: '',
     lease_end: '',
-    status: 'active' as const,
+    status: 'active' as 'active' | 'inactive' | 'pending',
   });
 
   useEffect(() => {
