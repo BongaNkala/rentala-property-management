@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, LayoutDashboard, Building2, Users, DollarSign, Wrench, BarChart3, Settings, LogOut, FileText, AlertCircle, Receipt, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, DollarSign, Wrench, BarChart3, Settings, LogOut, FileText, AlertCircle, Receipt, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -91,9 +91,7 @@ const Sidebar = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
       >
         {/* Logo */}
         <div className="flex items-center gap-4 px-2">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] flex items-center justify-center shadow-lg">
-            <Home className="w-6 h-6 text-white" />
-          </div>
+          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="Rentala" className="w-14 h-14 rounded-2xl shadow-lg" />
           <div>
             <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-[hsl(var(--accent))] bg-clip-text text-transparent">
               Rentala

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Home, Mail, Lock, User, ArrowRight, AlertCircle, Loader2, Check, X } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, AlertCircle, Loader2, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const SignUp = () => {
@@ -82,9 +82,7 @@ const SignUp = () => {
       <div className="glass-panel w-full max-w-md p-8 animate-scale-in relative z-10">
         {/* Logo Section */}
         <div className="flex items-center gap-3 mb-8 animate-fade-in">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center shadow-lg animate-pulse-glow">
-            <Home className="w-7 h-7 text-white" />
-          </div>
+          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="Rentala" className="w-16 h-16 rounded-2xl shadow-lg" />
           <div>
             <h2 className="text-2xl font-bold text-white">Rentala</h2>
             <p className="text-sm text-white/80">Property Management</p>

@@ -28,7 +28,10 @@ const Index = () => {
   return (
     <div className="min-h-screen text-white">
       <header className="flex items-center justify-between px-6 lg:px-16 py-5">
-        <div className="text-2xl font-black">Rentala</div>
+        <div className="flex items-center gap-3 text-2xl font-black">
+          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="Rentala" className="w-10 h-10 rounded-xl" />
+          Rentala
+        </div>
         <div className="flex gap-3">
           <Button asChild variant="outline" className="bg-white/5 text-white border-white/20">
             <Link to="/login">Log in</Link>
